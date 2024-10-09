@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+	  "lib": ["dom", "dom.iterable"],
+	  "outDir": "dist",
+	  "allowJs": true,
+	  "skipLibCheck": true,
+	  "strict": true,
+	  "esModuleInterop": true,
+	  "module": "es2022",
+	  "moduleResolution": "bundler",
+	  "resolveJsonModule": true,
+	  "isolatedModules": true,
+	  "incremental": true,
+	  "paths": {
+		"~/models/*": ["./src/models/*"],
+		"~/middleware/*": ["./src/middleware/*"],
+		"~/*": ["./src/*"]
+	  },
+	  "types": ["./global.d.ts"]
+	},
+	"include": ["**/*.ts"],
+  }
+  

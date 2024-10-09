@@ -1,0 +1,44 @@
+<script>
+	let content;
+	fetch("https://grandpa.sysvisionz.com/data").then(async d => {
+		data = await d.json()
+		propagandists.innerHTML = `<button onclick="content[${Object.keys(data.propagandists).map(v => {
+			const text = v.replace(/^www./, '').replace(/\.[A-z]+/, '')
+			return `'${v}']()">${text[0].toLocaleUpperCase()}${text.substring(1)}`
+		}).join("</button> <button onclick=\"content[")}</button>`
+		content = new Proxy(data, {
+			get: (t, p, r) => {
+				return () => {
+					switch (p){
+						case "hosts":
+							var val = t[p].join(', ')
+							break;
+						default:
+							var val= data.propagandists[p].join(', ')
+						
+					}
+					document.getElementById("data").innerText = val;
+				}
+			}
+		})
+	})
+</script>
+<style>
+	button {
+		padding: 3px 5px
+	}
+</style>
+<html>
+	<head>
+		<title>Stop it, Grandpa!</title>
+	</head>
+	<body>
+		<button onclick="content.hosts()">Propaganda Sites</button>
+		<div style="display: flex; align-items: center; flex-direction: column;">
+			<p>Propagandists from:</p>
+			<div style="display: flex" id="propagandists">
+			</div>
+		</div>
+		<div id="data"></div>
+	</body>
+</html>
