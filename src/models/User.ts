@@ -2,6 +2,7 @@ import validator from 'validator';
 import mongoose, {Schema, Document, Model, ObjectId, Query, FlatRecord } from 'mongoose';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { hashTag } from '~/db/dataConfig';
 
 interface UserObj extends Document{
 	_id: ObjectId,
@@ -12,6 +13,8 @@ interface UserObj extends Document{
 	tokens?: string[],
 	privs?: 'master' | 'admin' | 'mod' | 'user',
 	hasAtLeast: {[P in 'master' | 'admin' | 'mod' | 'user']: boolean}
+	generateAuthToken: () => Promise<string>,
+	removeToken: (token: string) => void
 }
 interface UserMethods {
 	generateAuthToken: () => Promise<string>,
@@ -26,7 +29,7 @@ export const levelFromPriv = (priv: 'master' | 'admin' | 'mod' | 'user') => {
 type QueryReturn = Promise<
   (Document<ObjectId, {}, FlatRecord<UserObj>> &
     FlatRecord<UserObj> &
-    Required<{ _id: ObjectId }> & { __v?: number | undefined }) | null
+    Required<{ _id: ObjectId }> & { __v?: number | undefined })
 >;
 
 interface QueryHelpers {
@@ -38,7 +41,7 @@ interface QueryHelpers {
 
 const UserSchema = new Schema<
 	UserObj, 
-	Model<UserObj>, 
+	Model<UserObj>,
 	UserMethods,
 	{},
 	{
@@ -142,7 +145,7 @@ const UserSchema = new Schema<
 						'_id': decoded._id,
 						'tokens.token': token,
 						'tokens.access': 'auth'
-					}).then(user => !privLevel || user?.hasAtLeast[privLevel] ? res(user) : rej({status: 403, message: "Inadequate privileges to perform this action."}))
+					}).then(user => !privLevel || user?.hasAtLeast[privLevel] ? res(user!) : rej({status: 403, message: "Inadequate privileges to perform this action."}))
 				})
 			},
 			findByDisplayName: function ( displayName: string, token: string ) {

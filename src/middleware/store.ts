@@ -1,8 +1,6 @@
 import type { Request, Response } from "express";
-import { authByToken } from "./authenticate";
 import { User } from "~/models";
 import {Propagandist, Host, Site} from '../models';
-import {hashTag} from '../db/dataConfig'
 import { Err } from "./utils";
 
 const authenticate = (req: Request, level: 'master' | 'admin' | 'mod' | 'user' = 'admin') => {
