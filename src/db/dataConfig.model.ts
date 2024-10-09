@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/your-database', {useNewUrlParser: true})
+mongoose.connect('mongodb://localhost:27017/stopitgramps', {useNewUrlParser: true});
+mongoose.set('useCreateIndex', true);
 
-const hashTag = 'your-hash-string';
+const hashTag="your-hash-string"
 
-module.exports = {hashTag, mongoose}
+export {mongoose, hashTag}
