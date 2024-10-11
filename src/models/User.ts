@@ -2,11 +2,11 @@ import validator from 'validator';
 import mongoose, {Schema, Document, Model, ObjectId, Query, FlatRecord } from 'mongoose';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { hashTag } from '~/db/dataConfig';
+import { hashTag } from '../db/dataConfig';
 
 interface UserObj extends Document{
 	_id: ObjectId,
-	displayName?: string,
+	displayName: string,
 	persist?: boolean,
 	password: string,
 	email: string,
@@ -14,11 +14,12 @@ interface UserObj extends Document{
 	privs?: 'master' | 'admin' | 'mod' | 'user',
 	hasAtLeast: {[P in 'master' | 'admin' | 'mod' | 'user']: boolean}
 	generateAuthToken: () => Promise<string>,
-	removeToken: (token: string) => void
+	removeToken: (token: string) => void,
+	toJSON: () => {displayName: string, email: string, privs: UserObj["privs"]}
 }
 interface UserMethods {
 	generateAuthToken: () => Promise<string>,
-	removeToken: (token: string) => void
+	removeToken: (token: string) => void,
 }
 
 export const levelFromPriv = (priv: 'master' | 'admin' | 'mod' | 'user') => {
@@ -50,7 +51,12 @@ const UserSchema = new Schema<
 	QueryHelpers
 >  (
 	{
-		displayName: String,
+		displayName: {
+			type: String,
+			required: true,
+			unique: true,
+			minlength: 4
+		},
 		persist: Boolean,
 		password: {
 			type: String,
@@ -90,6 +96,10 @@ const UserSchema = new Schema<
 			}
 		},
 		methods: {
+			toJSON: function() {
+				let {displayName, email, privs} = this;
+				return {displayName, email, privs}
+			},
 			generateAuthToken: function () {
 				let user = this;
 				var access = 'auth';

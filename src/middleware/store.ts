@@ -1,17 +1,18 @@
 import type { Request, Response } from "express";
-import { User } from "~/models";
+import { User } from "../models";
 import {Propagandist, Host, Site} from '../models';
-import { Err } from "./utils";
+import { Err, cleanObject} from "../utils";
+import { HostObj } from "../models/Host";
 
 const authenticate = (req: Request, level: 'master' | 'admin' | 'mod' | 'user' = 'admin') => {
-	const code: string = req.headers.auth as string;
+	const code: string = req.headers["x-auth"] as string;
 	return User.findByToken(code)
 }
 
-const addHost = (req: Request, res: Response) => {
+const addHost = (isBad?: boolean) => (req: Request, res: Response) => {
 	authenticate(req).then(() => {
 		const {body} = req
-		return hostHandler(body).then(obj => {
+		return hostHandler(body, isBad).then(obj => {
 			res.send(obj)
 		});
 	}).catch(err => Err(err, res))
@@ -96,22 +97,22 @@ const propagandistHandler = (content: {address: string, name?: string, descripti
 	})
 })
 
-const hostHandler = (content: {address: string, description?: string, name?: string, reasoning?: string, picture?: Buffer, propaganda?: boolean}) => new Promise((res, rej) => {
+const hostHandler = (content: {address: string, description?: string, name?: string, reasoning?: string, picture?: Buffer}, propaganda?: boolean) => new Promise<HostObj>((res, rej) => {
 	const {address} = content;
 	return Host.findOne({address}).then(host => {
 		if (!host){
-			const {description, name, reasoning, picture, propaganda} = content;
+			const {description, name, reasoning, picture} = content;
 			host = new Host({address, propaganda, description, name, reasoning, picture});
 			return host.save().then(() => res(host!.toJSON()));
 		}
-		const {description = host.description, name = host.name, reasoning = host.reasoning, picture = host.picture, propaganda = host.propaganda} = content;
+		const {description = host.description, name = host.name, reasoning = host.reasoning, picture = host.picture} = content;
 		return host.updateOne({
 			$set:{
 				name,
 				description,
 				reasoning,
 				picture,
-				propaganda
+				propaganda: propaganda || host.propaganda
 			}
 		}).then(() => host.save().then(() => res(host.toJSON())))
 	}).catch(error => {
@@ -119,14 +120,25 @@ const hostHandler = (content: {address: string, description?: string, name?: str
 	});
 })
 
-const addHosts = (req: Request, res: Response) => {
+const hostHandlerChain = (hosts: HostObj[], propagandists?: boolean) => {
+	return new Promise<HostObj[]>((res, rej) => {
+		const curr = hosts.pop()
+		if (!curr){
+			res([])
+			return;
+		}
+		hostHandler(curr, propagandists).then((host) => {
+			hosts.length ? hostHandlerChain(hosts).then(hostvals => res([...hostvals, host])) : res([host])
+		})
+	})
+}
+
+const addHosts = (isBad?: boolean) => (req: Request, res: Response) => {
 	authenticate(req).then(() => {
 		const {body} = req;
-		const retval = [];
-		for (const i in body){
-			retval.push(hostHandler(body[i]))
-		}
-		return res.send(retval);
+		hostHandlerChain(body, isBad).then((retval) => res.send(retval))
+	}).catch(err => {
+		Err(err, res)
 	})
 }
 
@@ -134,6 +146,8 @@ const addPropagandists = (req: Request, res: Response) => {
 	authenticate(req).then(async () => {
 		const body = await req.body.json()
 		siteAddHosts(body).then(ret => res.send(ret)).catch(err => Err(err, res))
+	}).catch(err => {
+		Err(err, res)
 	})
 }
 
@@ -148,6 +162,8 @@ const addPropagandistsToHost = (req: Request, res: Response) => {
 				res.send(propagandists)
 			})
 		})
+	}).catch(err => {
+		Err(err, res)
 	})
 }
 
@@ -190,6 +206,8 @@ const removePropagandist = (req: Request, res: Response) => {
 			}
 			return res.send(propagandist);
 		})
+	}).catch(err => {
+		Err(err, res)
 	})
 }
 
@@ -202,6 +220,8 @@ const removeHost = (req: Request, res: Response) => {
 			}
 			return res.send(host);
 		})
+	}).catch(err => {
+		Err(err, res)
 	})
 }
 

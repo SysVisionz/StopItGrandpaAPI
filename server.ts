@@ -1,12 +1,10 @@
 import http from 'http';
 import express from 'express';
 import path from 'path'
-import {MongoClient} from 'mongodb';
-import {store} from './src/middleware';
+import {store, auth} from './src/middleware';
 
 var app = express();
 var server = http.createServer(app);
-var mongoclient = new MongoClient("localhost");
 app.use(express.json())
 
 app.get('/', function(req, res){
@@ -18,6 +16,10 @@ app.get('/', function(req, res){
 
 app.get('/data', store.getData)
 
+app.post('/login', auth.login),
+
+app.get('/user?*', auth.getUser),
+
 app.delete('/propaganda/remove', store.removePropagandist);
 
 app.delete('/host/remove', store.removeHost)
@@ -26,8 +28,12 @@ app.post('/propaganda/multi', store.addPropagandists)
 
 app.post('/propaganda/add', store.addPropagandist)
 
-app.post('/host/add', store.addHost)
+app.post('/host/add', store.addHost(true))
 
-app.post('/host/multi', store.addHosts);
+app.post('/redirect/add', store.addHost())
+
+app.post('/host/multi', store.addHosts(true));
+
+app.post('/redirect/multi', store.addHosts())
 
 server.listen(8088, () => console.log('server up on port 8088'));

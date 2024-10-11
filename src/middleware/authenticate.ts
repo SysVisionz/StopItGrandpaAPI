@@ -1,11 +1,14 @@
 import {User} from '../models';
 import { Request, Response } from 'express';
-import { Err } from './utils';
-import { levelFromPriv } from '~/models/User';
+import { Err } from '../utils';
+import { levelFromPriv } from '../models/User';
 
 const login = async (req: Request, res: Response) => {
-	const {email, password, persist} = await req.body.json();
-	return User.findByCredentials(email, password).then( user => {
+	const {email, displayName, password, persist} = req.body;
+	if (!((email|| displayName) || password)){
+		res.status(400).send("Email or Display Name and Password required.")
+	}
+	User.findByCredentials({email, displayName}, password).then( user => {
 		user.persist = persist;
 		return user.generateAuthToken().then(token => {
 			return res.header('x-auth', token).send(user);
@@ -64,4 +67,20 @@ const setUserPriv = async (req: Request, res: Response) => {
 	.catch(err => res.status(err.status).send(err.message));
 }
 
-export {login, setUserPriv};
+const getUser = (req: Request, res: Response) => {
+	const {displayName, email } = req.query
+	if (!(displayName || email)){
+		res.status(400).send("display name or email required.")
+		return;
+	}
+	User.findOne(displayName && email ? {displayName, email} : displayName ? {displayName} : {email}).then((user) => {
+		if (!user){
+			res.status(404).send('User not found')
+		}
+		else {
+			res.send(user?.toJSON())
+		}
+	})
+}
+
+export {login, setUserPriv, byDisplayName, getUser};
