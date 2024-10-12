@@ -144,7 +144,7 @@ const addHosts = (isBad?: boolean) => (req: Request, res: Response) => {
 
 const addPropagandists = (req: Request, res: Response) => {
 	authenticate(req).then(async () => {
-		const body = await req.body.json()
+		const body = await req.body
 		siteAddHosts(body).then(ret => res.send(ret)).catch(err => Err(err, res))
 	}).catch(err => {
 		Err(err, res)
@@ -157,7 +157,7 @@ const addPropagandistsToHost = (req: Request, res: Response) => {
 		if (!host){
 			return res.status(400).send("No host provided.")
 		}
-		req.body.json().then((body: string[]) => {
+		req.body.then((body: string[]) => {
 			siteAdd(host, body).then((propagandists) => {
 				res.send(propagandists)
 			})
@@ -198,8 +198,8 @@ const getData = (_req: Request, res: Response) => {
 }
 
 const removePropagandist = (req: Request, res: Response) => {
-	authenticate(req).then(async () => {
-		const {address, site} = await req.body.json();
+	authenticate(req).then(() => {
+		const {address, site} = req.body;
 		Propagandist.findOneAndDelete({address, site}).then(propagandist => {
 			if (!propagandist){
 				return res.status(404).send('No such propagandist.')

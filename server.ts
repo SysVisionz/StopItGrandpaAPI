@@ -2,6 +2,9 @@ import http from 'http';
 import express from 'express';
 import path from 'path'
 import {store, auth} from './src/middleware';
+import { config } from 'dotenv';
+
+config()
 
 var app = express();
 var server = http.createServer(app);
@@ -16,9 +19,13 @@ app.get('/', function(req, res){
 
 app.get('/data', store.getData)
 
-app.post('/login', auth.login),
+app.post('/login', auth.login)
 
-app.get('/user?*', auth.getUser),
+app.get('/user?*', auth.getUser)
+
+app.get('/register', auth.register)
+
+app.get('/reset')
 
 app.delete('/propaganda/remove', store.removePropagandist);
 

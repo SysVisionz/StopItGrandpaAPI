@@ -83,4 +83,23 @@ const getUser = (req: Request, res: Response) => {
 	})
 }
 
-export {login, setUserPriv, byDisplayName, getUser};
+const resetPassword = (req: Request, res: Response) => {
+	// todo: we're going to use this to create an email.
+	const {EMAIL: email} = process.env
+}
+
+const register = (req: Request, res: Response) => {
+	const {email, displayName, password, persist} = req.body
+	User.findOne({$or: [{email}, {displayName}]}).then(existing => {
+		if (existing){
+			res.status(401).send(`user with this ${email === existing.email ? "email" : "display name"} already exists.`)
+			return;
+		}
+		const user = new User({email, displayName, password, persist, privs: "user"})
+		user.save().then(() => {
+			res.send("User registration successful!")
+		})
+	})
+}
+
+export {login, setUserPriv, byDisplayName, getUser, register};
