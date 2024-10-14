@@ -4,7 +4,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { hashTag } from '../db/dataConfig';
 
-interface UserObj extends Document{
+export interface UserObj extends Document{
 	_id: ObjectId,
 	displayName: string,
 	persist?: boolean,
@@ -37,7 +37,6 @@ interface QueryHelpers {
 	findByToken: (token?: string, privLevel?: 'user' | 'mod' | 'admin' | 'master') => QueryReturn
 	findByDisplayName: (displayName: string, token: string) => QueryReturn
 	findByCredentials: ({email, displayName}: {email: string, displayName: string}, password: string) => QueryReturn
-
 }
 
 const UserSchema = new Schema<

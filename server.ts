@@ -1,7 +1,7 @@
 import http from 'http';
 import express from 'express';
 import path from 'path'
-import {store, auth} from './src/middleware';
+import {store, auth, user, host, prop} from './src/middleware';
 import { config } from 'dotenv';
 
 config()
@@ -21,26 +21,32 @@ app.get('/data', store.getData)
 
 app.post('/login', auth.login)
 
-app.get('/user?*', auth.getUser)
+app.get('/user?*', user.get)
 
 app.get('/register', auth.register)
 
-app.get('/reset')
+app.get('/update?*', user.update)
 
-app.delete('/propaganda/remove', store.removePropagandist);
+app.get('/reset', )
 
-app.delete('/host/remove', store.removeHost)
+app.delete('/propaganda', prop.remove);
 
-app.post('/propaganda/multi', store.addPropagandists)
+app.delete('/host', host.remove)
 
-app.post('/propaganda/add', store.addPropagandist)
+// app.delete('/mass-propaganda', prop.massRemove)
 
-app.post('/host/add', store.addHost(true))
+// app.delete('/mass-host', host.massRemove)
 
-app.post('/redirect/add', store.addHost())
+app.post('/mass-propaganda', prop.massAdd)
 
-app.post('/host/multi', store.addHosts(true));
+app.post('/propaganda', prop.add)
 
-app.post('/redirect/multi', store.addHosts())
+app.post('/host', host.add(true))
+
+app.post('/redirect', host.massAdd())
+
+app.post('/mass-host', host.massAdd(true));
+
+app.post('/mass-redirect', host.massAdd())
 
 server.listen(8088, () => console.log('server up on port 8088'));
