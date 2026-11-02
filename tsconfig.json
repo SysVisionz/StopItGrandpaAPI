@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"target": "ES5",
+		"target": "es6",
 	  "outDir": "dist",
 	  "allowJs": true,
 	  "skipLibCheck": true,
@@ -12,6 +12,6 @@
 	  "incremental": true,
 	  "types": ["./global.d.ts"]
 	},
-	"include": ["**/*.ts"],
+	"include": ["**/*.ts", "**/*.html"],
   }
   

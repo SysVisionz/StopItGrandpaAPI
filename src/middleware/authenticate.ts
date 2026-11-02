@@ -5,8 +5,9 @@ import { levelFromPriv } from '../models/User';
 
 const login = async (req: Request, res: Response) => {
 	const {email, displayName, password, persist} = req.body;
-	if (!((email|| displayName) || password)){
+	if (!(email || displayName) || !password){
 		res.status(400).send("Email or Display Name and Password required.")
+		return;
 	}
 	User.findByCredentials({email, displayName}, password).then( user => {
 		user.persist = persist;

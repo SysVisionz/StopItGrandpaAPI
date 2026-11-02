@@ -12,7 +12,7 @@ app.use(express.json())
 
 app.get('/', function(req, res){
 	res.sendFile("index.html", {
-		root: path.join(__dirname)
+		root: path.join(__dirname, "/src")
 	});
 
 })
@@ -21,17 +21,17 @@ app.get('/data', store.getData)
 
 app.post('/login', auth.login)
 
-app.get('/user?*', user.get)
+// app.get('/user?*', user.get)
 
-app.get('/register', auth.register)
+// app.get('/register', auth.register)
 
-app.get('/update?*', user.update)
+// app.get('/update?*', user.update)
 
-app.get('/reset', )
+// app.get('/reset', )
 
-app.delete('/propaganda', prop.remove);
+// app.delete('/propaganda', prop.remove);
 
-app.delete('/host', host.remove)
+// app.delete('/host', host.remove)
 
 // app.delete('/mass-propaganda', prop.massRemove)
 
